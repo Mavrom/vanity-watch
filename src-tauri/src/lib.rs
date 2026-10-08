@@ -7,6 +7,7 @@ mod notify;
 mod parse;
 mod status;
 mod store;
+mod tray;
 mod window;
 
 use monitor::AppState;
@@ -28,6 +29,7 @@ pub fn run() {
             let path = app.path().app_data_dir()?.join("vanity-watch.json");
             let (store, recovered) = Store::load(path);
             app.manage(AppState::new(store, recovered));
+            tray::create_tray(app.handle())?;
             if !std::env::args().any(|a| a == "--minimized") {
                 window::open_main_window(app.handle());
             }
@@ -45,6 +47,13 @@ pub fn run() {
             commands::set_muted,
             commands::update_settings,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running Vanity Watch");
+        .build(tauri::generate_context!())
+        .expect("error while building Vanity Watch")
+        .run(|_app, event| {
+            // Closing the window destroys the webview; keep running in the tray.
+            // Only the tray's "Çık" (app.exit, which sets a code) really quits.
+            if let tauri::RunEvent::ExitRequested { code: None, api, .. } = event {
+                api.prevent_exit();
+            }
+        });
 }
