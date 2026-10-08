@@ -122,7 +122,10 @@ function render() {
 }
 
 async function layout() {
-  await new Promise(requestAnimationFrame);
+  // Not requestAnimationFrame: the window starts hidden and Chromium barely runs
+  // rAF for hidden pages, which delayed the popup by seconds. Reading the size
+  // forces layout synchronously, so a microtask is enough to batch DOM changes.
+  await Promise.resolve();
   if (order.length === 0) return;
   await call("notifier_layout", { height: Math.ceil(stack.getBoundingClientRect().height) + 28 });
 }

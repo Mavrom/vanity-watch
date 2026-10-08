@@ -71,9 +71,17 @@ pub fn run() {
         .run(|app, event| {
             // Closing the window destroys the webview; keep running in the tray.
             // Only the tray's "Çık" (app.exit, which sets a code) really quits.
-            if let tauri::RunEvent::ExitRequested { code: None, api, .. } = event {
-                api.prevent_exit();
-                mem::trim_soon(app);
+            match event {
+                tauri::RunEvent::ExitRequested { code: None, api, .. } => {
+                    api.prevent_exit();
+                    mem::trim_soon(app);
+                }
+                tauri::RunEvent::WindowEvent {
+                    label,
+                    event: tauri::WindowEvent::Destroyed,
+                    ..
+                } if label == notifier::LABEL => notifier::on_window_destroyed(app),
+                _ => {}
             }
         });
 }

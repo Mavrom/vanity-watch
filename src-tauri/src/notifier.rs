@@ -101,6 +101,12 @@ fn dismiss(app: &AppHandle, id: u64) {
     }
 }
 
+/// The popup window can also be closed from outside (Alt+F4); forget its popups
+/// then, or they would reappear with the next notification.
+pub fn on_window_destroyed(app: &AppHandle) {
+    app.state::<Notifier>().popups.lock().unwrap().clear();
+}
+
 #[tauri::command]
 pub fn notifier_popups(notifier: State<'_, Notifier>) -> Vec<Popup> {
     notifier.popups.lock().unwrap().clone()
