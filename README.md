@@ -1,9 +1,33 @@
+<div align="center">
+
+<img src="docs/images/logo.png" width="128" height="128" alt="Vanity Watch logosu">
+
 # Vanity Watch
 
-Discord vanity URL'lerini (`discord.gg/xyz`) takip eden küçük, açık kaynak bir masaüstü uygulaması.
-Bir URL boşa düştüğünde anında Windows bildirimi alırsın. Pencereyi kapatınca tepside çok az kaynakla çalışmaya devam eder.
+**Discord vanity URL'lerini takip et, boşa düştüğü an haberin olsun.**
 
-*A tiny open-source desktop app that watches Discord vanity URLs and notifies you when one is released. English summary below.*
+Token istemeyen, tamamen senin bilgisayarında çalışan, tepside neredeyse hiç kaynak harcamayan açık kaynak masaüstü uygulaması.
+
+[![Son sürüm](https://img.shields.io/github/v/release/Mavrom/vanity-watch?style=flat-square&color=8b7dff&label=s%C3%BCr%C3%BCm)](https://github.com/Mavrom/vanity-watch/releases/latest)
+[![CI](https://img.shields.io/github/actions/workflow/status/Mavrom/vanity-watch/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/Mavrom/vanity-watch/actions/workflows/ci.yml)
+[![Lisans: MIT](https://img.shields.io/badge/lisans-MIT-34d399?style=flat-square)](LICENSE)
+![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0b0c12?style=flat-square)
+
+[**⬇ İndir (kurulumsuz .exe)**](https://github.com/Mavrom/vanity-watch/releases/latest) · [Özellikler](#ne-yapar) · [Geliştirme](#geli%C5%9Ftirme)
+
+*A tiny open-source desktop app that watches Discord vanity URLs and notifies you the moment one is released. [English summary](#english) below.*
+
+<br>
+
+<img src="docs/images/panel.png" alt="Vanity Watch takip paneli" width="900">
+
+</div>
+
+### Boşa düştüğü anı kaçırma
+
+Takip ettiğin bir URL boşaldığında sağ altta **sen kapatana kadar kalan** bir bildirim çıkar, uygulama içinde de uyarı bandı belirir.
+
+<p align="center"><img src="docs/images/notification.png" alt="URL boşa düştü bildirimi" width="420"></p>
 
 ## Ne yapar?
 
@@ -14,7 +38,7 @@ Bir URL boşa düştüğünde anında Windows bildirimi alırsın. Pencereyi kap
   - 🔴 **Boşaldı · sunucu kapalı**: önceki sunucu silinmiş/kapatılmış, URL bir süre kilitli kalabilir
   - 🔒 **Engelli**: topluluk listesinde ya da senin "alınamıyor" işaretinde
 - 10–60 saniyede bir otomatik kontrol, geri sayım göstergesi, tek tek veya toplu yenileme
-- Durum değişince Windows bildirimi, URL bazında sessize alma
+- URL boşa düşünce kapatana kadar kalan bildirim kartı ve uygulama içi uyarı bandı, URL bazında sessize alma
 - Durum geçmişi, son hareketler akışı ve not alanı
 - Tepside hafif çalışma (pencere kapanınca arayüz bellekten silinir), isteğe bağlı Windows ile başlatma
 
@@ -26,7 +50,12 @@ Bir URL boşa düştüğünde anında Windows bildirimi alırsın. Pencereyi kap
 
 ## Kurulum
 
-[Releases](https://github.com/Mavrom/vanity-watch/releases) sayfasından `.msi` veya `-setup.exe` dosyasını indirip kur.
+[Releases](https://github.com/Mavrom/vanity-watch/releases/latest) sayfasından:
+
+- **`…_portable.exe`**: kurulum yok, indir ve çift tıkla.
+- **`…-setup.exe`** veya **`.msi`**: Başlat menüsü kısayolu ve kaldırma desteğiyle kurulum.
+
+Exe imzasız olduğu için Windows ilk açılışta uyarı gösterebilir: **Ek bilgi → Yine de çalıştır**.
 
 ## Geliştirme
 

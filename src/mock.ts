@@ -35,8 +35,8 @@ const urls: TrackedUrl[] = [
     note: "Sunucu sahibine yazdım, cevap bekliyorum.",
     alert: true,
   }),
-  url("valorant-tr", "in_use", {
-    guild: { id: "2", name: "Valorant Türkiye", icon: null, memberCount: 58_300 },
+  url("oyun-gecesi", "in_use", {
+    guild: { id: "2", name: "Oyun Gecesi", icon: null, memberCount: 58_300 },
     history: [{ at: ago(86400), from: "unknown", to: "in_use" }],
     muted: true,
   }),
@@ -48,9 +48,9 @@ const urls: TrackedUrl[] = [
       { at: ago(3600 * 5), from: "in_use", to: "released_guild_gone" },
     ],
   }),
-  url("minecraft", "blocked", { userBlocked: true, history: [{ at: ago(86400), from: "unknown", to: "blocked" }] }),
-  url("lofi", "in_use", {
-    guild: { id: "4", name: "lofi hip hop radio", icon: null, memberCount: 12_400 },
+  url("kral", "blocked", { userBlocked: true, history: [{ at: ago(86400), from: "unknown", to: "blocked" }] }),
+  url("lofi-cafe", "in_use", {
+    guild: { id: "4", name: "Lofi Cafe", icon: null, memberCount: 12_400 },
     lastError: "Zaman aşımı",
     history: [{ at: ago(3600 * 20), from: "unknown", to: "in_use" }],
   }),

@@ -206,7 +206,37 @@ code {
 .monitor-text small { color: var(--text-3); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ───────── Main ───────── */
-.main { overflow-y: auto; padding: 28px 32px 32px; min-width: 0; }
+.main { overflow-y: auto; margin-top: 36px; padding: 12px 32px 32px; min-width: 0; }
+
+/* Frameless window: our own caption bar. The bar itself is the drag handle; the
+   sidebar shows through it, and the main column starts below it so scrolled
+   content never slides under the controls. */
+.titlebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  height: 36px;
+  display: flex;
+  justify-content: flex-end;
+}
+.win-controls { display: flex; height: 100%; }
+.win-btn {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  transition: background 0.12s, color 0.12s;
+}
+.win-btn svg { width: 10px; height: 10px; }
+.win-btn:hover { background: rgb(255 255 255 / 0.08); color: var(--text); }
+.win-btn:active { background: rgb(255 255 255 / 0.05); }
+.win-btn.close:hover { background: #e81123; color: #fff; }
+.win-btn.close:active { background: #c50f1f; }
 
 .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 24px; }
 .page-head h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.025em; }
@@ -785,5 +815,5 @@ input:checked + .mini-switch::after { transform: translateX(12px); }
   .nav-item { justify-content: center; padding: 11px 0; }
   .monitor { justify-content: center; padding: 10px 0; }
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .main { padding: 22px 20px 24px; }
+  .main { padding: 12px 20px 24px; }
 }

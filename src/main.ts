@@ -5,6 +5,7 @@ import { createCard, type Card } from "./card";
 import { h, svgIcon } from "./dom";
 import { FILTERS, STATUS_META, matchesFilter, relativeTime, type Filter } from "./format";
 import { ICONS, type IconName } from "./icons";
+import { setupTitlebar } from "./titlebar";
 
 const byId = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -49,6 +50,7 @@ let cycling = false;
 let nextCheckAt: number | null = null;
 let toastTimer: number | undefined;
 
+setupTitlebar();
 byId("settings-icon").append(svgIcon(ICONS.settings));
 byId("refresh-icon").append(svgIcon(ICONS.refresh));
 byId("add-icon").append(svgIcon(ICONS.link));
