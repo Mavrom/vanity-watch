@@ -1,36 +1,40 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#2a1f6e"/>
-      <stop offset="0.55" stop-color="#120e34"/>
-      <stop offset="1" stop-color="#08071a"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="0.28" cy="0.2" r="0.75">
-      <stop offset="0" stop-color="#9d8cff" stop-opacity="0.55"/>
-      <stop offset="1" stop-color="#9d8cff" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#a99bff"/>
-      <stop offset="1" stop-color="#e06bff"/>
-    </linearGradient>
-    <linearGradient id="eye" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#d6d0ff"/>
-    </linearGradient>
-    <radialGradient id="iris" cx="0.4" cy="0.35" r="0.8">
-      <stop offset="0" stop-color="#8f7dff"/>
-      <stop offset="1" stop-color="#3a2cb0"/>
-    </radialGradient>
+    <radialGradient id="bg" cx=".5" cy=".42" r=".75"><stop offset="0" stop-color="#2d1663"/><stop offset=".6" stop-color="#120a2e"/><stop offset="1" stop-color="#06040f"/></radialGradient>
+    <radialGradient id="aura" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#c46bff" stop-opacity=".55"/><stop offset="1" stop-color="#c46bff" stop-opacity="0"/></radialGradient>
+    <filter id="blur30" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="30"/></filter>
+    <filter id="blur6" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+    <clipPath id="sq"><rect width="1024" height="1024" rx="232"/></clipPath>
   </defs>
-  <rect width="1024" height="1024" rx="232" fill="url(#bg)"/>
-  <rect width="1024" height="1024" rx="232" fill="url(#glow)"/>
-  <rect x="3" y="3" width="1018" height="1018" rx="229" fill="none" stroke="#ffffff" stroke-opacity="0.1" stroke-width="6"/>
-  <circle cx="512" cy="512" r="318" fill="none" stroke="url(#ring)" stroke-width="58" stroke-linecap="round"
-          stroke-dasharray="1498 500" transform="rotate(-35 512 512)"/>
-  <circle cx="330" cy="252" r="46" fill="#ffffff"/>
-  <circle cx="330" cy="252" r="46" fill="none" stroke="#e06bff" stroke-opacity="0.45" stroke-width="22"/>
-  <path d="M292 512 C400 396 624 396 732 512 C624 628 400 628 292 512 Z" fill="url(#eye)"/>
-  <circle cx="512" cy="512" r="94" fill="url(#iris)"/>
-  <circle cx="512" cy="512" r="40" fill="#120d3a"/>
-  <circle cx="542" cy="482" r="26" fill="#ffffff"/>
+  <g clip-path="url(#sq)">
+    <rect width="1024" height="1024" fill="url(#bg)"/>
+    <g fill="#e9d8ff" opacity=".07">
+      <path d="M512 500 L380 0 L460 0 Z"/><path d="M512 500 L640 0 L700 0 Z"/>
+      <path d="M512 500 L1024 300 L1024 380 Z"/><path d="M512 500 L0 330 L0 400 Z"/>
+      <path d="M512 500 L860 1024 L780 1024 Z"/><path d="M512 500 L170 1024 L250 1024 Z"/>
+    </g>
+    <circle cx="512" cy="500" r="360" fill="url(#aura)"/>
+    <ellipse cx="512" cy="812" rx="250" ry="42" fill="#c46bff" opacity=".55" filter="url(#blur30)"/>
+    <g transform="translate(0 -28)" stroke="#ffffff" stroke-opacity=".28" stroke-width="3" stroke-linejoin="round">
+      <polygon points="232,430 372,430 512,820" fill="#9b74ff"/>
+      <polygon points="372,430 512,430 512,820" fill="#6d3fe0"/>
+      <polygon points="512,430 652,430 512,820" fill="#c06bff"/>
+      <polygon points="652,430 792,430 512,820" fill="#4a23b0"/>
+      <line x1="442" y1="430" x2="512" y2="820" stroke-opacity=".18"/>
+      <line x1="582" y1="430" x2="512" y2="820" stroke-opacity=".18"/>
+      <polygon points="232,430 382,290 442,430" fill="#cbb6ff"/>
+      <polygon points="382,290 512,290 442,430" fill="#f4ecff"/>
+      <polygon points="442,430 512,290 582,430" fill="#a98cff"/>
+      <polygon points="512,290 642,290 582,430" fill="#dccbff"/>
+      <polygon points="642,290 792,430 582,430" fill="#8a63f0"/>
+      <polygon points="398,302 498,302 452,400" fill="#ffffff" fill-opacity=".55" stroke="none"/>
+      <polygon points="250,446 360,446 470,744" fill="#ffffff" fill-opacity=".14" stroke="none"/>
+    </g>
+    <g fill="#ffffff">
+      <path d="M318 214 L330 258 L374 270 L330 282 L318 326 L306 282 L262 270 L306 258 Z" filter="url(#blur6)" opacity=".8"/>
+      <path d="M318 214 L330 258 L374 270 L330 282 L318 326 L306 282 L262 270 L306 258 Z"/>
+      <path d="M752 600 L759 624 L783 631 L759 638 L752 662 L745 638 L721 631 L745 624 Z"/>
+      <circle cx="690" cy="236" r="9" opacity=".8"/>
+    </g>
+  </g>
 </svg>
