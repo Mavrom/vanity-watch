@@ -17,7 +17,7 @@ Discord vanity URL'lerini (ör. `discord.gg/xyz`) takip eden, açık kaynak, kü
 
 - **Tauri 2** (Rust backend + WebView2 arayüz). Gerekçe: `.exe` ~5–10 MB, düşük RAM; Electron gibi Chromium paketlemez, Windows'un yerleşik WebView2'sini kullanır.
 - **Rust:** `reqwest` (HTTP, rustls), `tokio` (zamanlayıcı/async), `serde`/`serde_json` (veri), `chrono` (zaman damgası).
-- **Tauri plugin'leri:** `tauri-plugin-notification` (Windows bildirimleri), `tauri-plugin-autostart` (Windows ile başlat), tray için Tauri'nin yerleşik `tray-icon` özelliği.
+- **Tauri plugin'leri:** `tauri-plugin-notification` (Windows bildirimleri), `tauri-plugin-autostart` (Windows ile başlat), `tauri-plugin-single-instance` (ikinci kez açılırsa mevcut pencereyi öne getirir; iki ayrı kontrol döngüsü çalışmasını engeller), tray için Tauri'nin yerleşik `tray-icon` özelliği.
 - **Arayüz:** Vite + sade TypeScript (framework yok).
 - **Lisans:** MIT. GitHub Actions (`tauri-action`) ile tag'lerde `.exe`/`.msi` release.
 
@@ -91,7 +91,7 @@ Kontrol hatası (ağ hatası, 429, 5xx) `Status`'u değiştirmez; yalnızca `las
 
 Widget sorgusu yalnızca boş durumdayken ve önceki durum `InUse` iken (geçiş anında) ya da sonuç henüz belirlenmemişken yapılır; her turda tekrarlanmaz. `ReleasedGuildExists`/`ReleasedGuildGone` durumundaki bir URL tekrar 404 dönerse durum korunur.
 
-> **Doğrulanacak varsayım:** Widget endpoint'inin silinmiş sunucu için `10004 Unknown Guild`, var olan ama widget'ı kapalı sunucu için `50004 Widget Disabled` döndürdüğü. Uygulama sırasında gerçek isteklerle test edilecek; farklı çıkarsa sınıflandırma güncellenir.
+> **Doğrulandı (2026-10-08):** Var olan, widget'ı kapalı sunucu → `403` / `50004 Widget Disabled`; var olmayan sunucu ID'si → `404` / `10004 Unknown Guild`. (Gerçekten silinmiş bir sunucu ile test edilemedi; var olmayan ID ile aynı yanıtı vermesi bekleniyor.)
 
 ### Discord API
 
@@ -119,7 +119,8 @@ Widget sorgusu yalnızca boş durumdayken ve önceki durum `InUse` iken (geçiş
   - `from ∈ {AppearsFree, ReleasedGuildExists, ReleasedGuildGone}` ve `to == InUse` ve `notify_on_taken` → **Taken**.
   - Diğer geçişler → yok.
 - Metin örnekleri: "🔔 discord.gg/xyz boşaldı! (sunucu hâlâ var)", "discord.gg/xyz alındı: Sunucu Adı".
-- Bildirimleri Rust tarafı gönderir; pencerenin açık olması gerekmez. Bildirime tıklayınca pencere açılır.
+- Bildirimleri Rust tarafı gönderir; pencerenin açık olması gerekmez.
+- Bildirime tıklayınca uygulamayı açma: Tauri'nin masaüstü bildirim plugin'i tıklama olayını desteklemediği için kapsam dışı. Kullanıcı tepsi ikonundan açar.
 
 ### Hafiflik (performans gereksinimi)
 
