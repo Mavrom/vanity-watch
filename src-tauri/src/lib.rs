@@ -1,3 +1,4 @@
+mod store;
 mod notify;
 mod status;
 mod discord;
