@@ -25,3 +25,6 @@ dist-ssr
 
 # Local Claude Code settings
 .claude/settings.local.json
+
+# Locally built single-file app (releases ship via GitHub)
+Vanity Watch.exe
