@@ -7,51 +7,133 @@
     <script type="module" src="/src/main.ts" defer></script>
   </head>
   <body>
-    <header class="topbar">
-      <div class="brand">
-        <span class="logo" aria-hidden="true"></span>
-        <span>Vanity Watch</span>
-      </div>
-      <form id="add-form" class="add" autocomplete="off">
-        <span class="add-prefix">discord.gg/</span>
-        <input id="add-input" placeholder="takip edilecek url" spellcheck="false" />
-        <button type="submit" class="btn primary">Ekle</button>
-      </form>
-      <div class="controls">
-        <label class="switch" title="Otomatik kontrol">
-          <input type="checkbox" id="auto-toggle" />
-          <span class="track"><span class="thumb"></span></span>
-          <span>Otomatik</span>
-        </label>
-        <select id="interval-select" title="Kontrol aralığı">
-          <option value="10">10 sn</option>
-          <option value="15">15 sn</option>
-          <option value="20">20 sn</option>
-          <option value="30">30 sn</option>
-          <option value="60">60 sn</option>
-        </select>
-        <button id="refresh-all" class="btn" title="Hepsini şimdi kontrol et">Hepsini yenile</button>
-        <button id="open-settings" class="btn icon" title="Ayarlar"></button>
-      </div>
-    </header>
-    <p id="add-error" class="add-error" hidden></p>
-    <nav id="filters" class="filters"></nav>
-    <main id="list" class="list"></main>
-    <section id="empty" class="empty" hidden>
-      <h2>Henüz takip ettiğin bir URL yok</h2>
-      <p>Yukarıya bir vanity URL yaz: <code>sunucum</code>, <code>discord.gg/sunucum</code> veya tam link olabilir.</p>
-      <p class="muted">Kontroller token gerektirmeyen açık Discord endpoint'iyle yapılır. Hesabın hiçbir şekilde kullanılmaz.</p>
-    </section>
+    <div class="backdrop" aria-hidden="true"></div>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="mark" aria-hidden="true"><i></i></span>
+          <div class="brand-text">
+            <b>Vanity Watch</b>
+            <small>URL takip paneli</small>
+          </div>
+        </div>
+
+        <p class="nav-label">Görünüm</p>
+        <nav id="nav" class="nav"></nav>
+
+        <div class="sidebar-foot">
+          <div id="monitor" class="monitor">
+            <div class="ring">
+              <svg viewBox="0 0 40 40" aria-hidden="true">
+                <circle class="ring-track" cx="20" cy="20" r="17" />
+                <circle id="ring-progress" class="ring-progress" cx="20" cy="20" r="17" />
+              </svg>
+              <span id="countdown" class="ring-label"></span>
+            </div>
+            <div class="monitor-text">
+              <b id="monitor-title">Canlı izleme</b>
+              <small id="monitor-sub"></small>
+            </div>
+          </div>
+          <button id="open-settings" class="nav-item">
+            <span class="nav-icon" id="settings-icon"></span>
+            <span class="nav-text">Ayarlar</span>
+          </button>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="page-head">
+          <div>
+            <h1>Takip Paneli</h1>
+            <p>URL'lerini canlı izle, boşa düştüğü an haberin olsun.</p>
+          </div>
+          <div class="head-actions">
+            <div class="segmented" title="Otomatik kontrol">
+              <label class="switch">
+                <input type="checkbox" id="auto-toggle" />
+                <span class="track"><span class="thumb"></span></span>
+                <span>Otomatik</span>
+              </label>
+              <select id="interval-select" title="Kontrol aralığı">
+                <option value="10">10 sn</option>
+                <option value="15">15 sn</option>
+                <option value="20">20 sn</option>
+                <option value="30">30 sn</option>
+                <option value="60">60 sn</option>
+              </select>
+            </div>
+            <button id="refresh-all" class="btn primary"><span id="refresh-icon"></span>Hepsini yenile</button>
+          </div>
+        </header>
+
+        <section id="stats" class="stats"></section>
+
+        <form id="add-form" class="add" autocomplete="off">
+          <span class="add-icon" id="add-icon"></span>
+          <span class="add-prefix">discord.gg/</span>
+          <input id="add-input" placeholder="takip etmek istediğin url" spellcheck="false" />
+          <kbd>Enter</kbd>
+          <button type="submit" class="btn primary">Takibe al</button>
+        </form>
+        <p id="add-error" class="add-error" hidden></p>
+
+        <div class="content">
+          <section class="panel list-panel">
+            <div class="panel-head">
+              <h2 id="list-title">Tüm URL'ler</h2>
+              <span id="list-count" class="badge-count"></span>
+            </div>
+            <div class="list-header" id="list-header">
+              <span>URL</span><span>Durum</span><span>Üye</span><span>Son kontrol</span><span></span>
+            </div>
+            <div id="list" class="list"></div>
+            <div id="empty" class="empty" hidden>
+              <div class="empty-art" aria-hidden="true"><i></i></div>
+              <h3 id="empty-title">Henüz takip ettiğin bir URL yok</h3>
+              <p id="empty-text">Yukarıya bir vanity URL yaz. <code>sunucum</code>, <code>discord.gg/sunucum</code> veya tam link olabilir.</p>
+            </div>
+          </section>
+
+          <aside class="panel activity-panel">
+            <div class="panel-head">
+              <h2>Son hareketler</h2>
+              <span class="live"><i></i>Canlı</span>
+            </div>
+            <ol id="activity" class="activity"></ol>
+            <div class="privacy">
+              <b>Token gerekmez</b>
+              <span>Kontroller Discord'un herkese açık endpoint'iyle yapılır, hesabın hiçbir şekilde kullanılmaz.</span>
+            </div>
+          </aside>
+        </div>
+      </main>
+    </div>
+
     <dialog id="settings" class="settings">
       <form method="dialog">
-        <h2>Ayarlar</h2>
-        <label class="row"><input type="checkbox" id="set-release" /> URL boşa düşünce bildirim gönder</label>
-        <label class="row"><input type="checkbox" id="set-taken" /> Boştaki URL alınınca bildirim gönder</label>
-        <label class="row"><input type="checkbox" id="set-autostart" /> Windows ile başlat (tepside, penceresiz)</label>
-        <p class="muted">Pencereyi kapatınca uygulama tepside çalışmaya devam eder. Tamamen çıkmak için tepsi ikonuna sağ tıklayıp "Çık"ı seç.</p>
-        <div class="dialog-actions"><button class="btn primary" value="close">Tamam</button></div>
+        <div class="dialog-head">
+          <h2>Ayarlar</h2>
+          <button class="icon-btn" value="close" aria-label="Kapat">✕</button>
+        </div>
+        <p class="group-label">Bildirimler</p>
+        <label class="setting">
+          <span><b>URL boşa düşünce</b><small>Takip ettiğin URL kullanımdan çıktığında anında bildirim.</small></span>
+          <input type="checkbox" id="set-release" /><span class="mini-switch"></span>
+        </label>
+        <label class="setting">
+          <span><b>Boştaki URL alınınca</b><small>Boşta görünen bir URL bir sunucu tarafından alındığında.</small></span>
+          <input type="checkbox" id="set-taken" /><span class="mini-switch"></span>
+        </label>
+        <p class="group-label">Uygulama</p>
+        <label class="setting">
+          <span><b>Windows ile başlat</b><small>Bilgisayar açılınca tepside, penceresiz başlar.</small></span>
+          <input type="checkbox" id="set-autostart" /><span class="mini-switch"></span>
+        </label>
+        <p class="dialog-note">Pencereyi kapatınca uygulama tepside çok az kaynakla çalışmaya devam eder. Tamamen çıkmak için tepsi ikonuna sağ tıklayıp <b>Çık</b>'ı seç.</p>
       </form>
     </dialog>
+
     <div id="toast" class="toast" hidden></div>
   </body>
 </html>

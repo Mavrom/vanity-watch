@@ -1,4 +1,5 @@
 import type { GuildInfo, Status } from "./api";
+import type { IconName } from "./icons";
 
 export type Tone = "green" | "yellow" | "orange" | "red" | "gray" | "lock";
 
@@ -39,12 +40,12 @@ export const STATUS_META: Record<Status, StatusMeta> = {
 
 export type Filter = "all" | "in_use" | "free" | "released" | "blocked";
 
-export const FILTERS: { id: Filter; label: string }[] = [
-  { id: "all", label: "Tümü" },
-  { id: "in_use", label: "Kullanımda" },
-  { id: "free", label: "Boşta" },
-  { id: "released", label: "Boşaldı" },
-  { id: "blocked", label: "Engelli" },
+export const FILTERS: { id: Filter; label: string; title: string; icon: IconName }[] = [
+  { id: "all", label: "Tümü", title: "Tüm URL'ler", icon: "grid" },
+  { id: "in_use", label: "Kullanımda", title: "Kullanımdaki URL'ler", icon: "check" },
+  { id: "free", label: "Boşta", title: "Boşta görünen URL'ler", icon: "dashed" },
+  { id: "released", label: "Boşaldı", title: "Boşalan URL'ler", icon: "unlink" },
+  { id: "blocked", label: "Engelli", title: "Engelli URL'ler", icon: "lock" },
 ];
 
 export function matchesFilter(status: Status, filter: Filter): boolean {

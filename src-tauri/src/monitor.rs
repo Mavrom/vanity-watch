@@ -3,7 +3,8 @@ use crate::discord::{DiscordClient, InviteResult, API_BASE};
 use crate::notify;
 use crate::status;
 use crate::store::Store;
-use chrono::Utc;
+use chrono::{DateTime, Utc};
+use serde::Serialize;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use std::time::Duration;
@@ -13,6 +14,12 @@ use tokio::sync::Notify;
 
 /// Pause between two codes in one cycle, to stay far below Discord's rate limits.
 const GAP_BETWEEN_CHECKS: Duration = Duration::from_secs(1);
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CycleInfo {
+    next_check_at: Option<DateTime<Utc>>,
+}
 
 pub struct AppState {
     pub store: Mutex<Store>,
@@ -57,8 +64,12 @@ pub async fn run(app: AppHandle) {
         };
         let forced = state.force_cycle.swap(false, Ordering::SeqCst);
         if auto || forced {
+            let _ = app.emit("cycle-started", ());
             run_cycle(&app).await;
         }
+        // Lets the UI draw a countdown; `None` means auto-check is paused.
+        let next_check_at = auto.then(|| Utc::now() + chrono::Duration::seconds(interval.into()));
+        let _ = app.emit("cycle-finished", CycleInfo { next_check_at });
         if auto {
             tokio::select! {
                 _ = tokio::time::sleep(Duration::from_secs(interval.into())) => {}

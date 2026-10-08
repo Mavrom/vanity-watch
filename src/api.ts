@@ -49,23 +49,53 @@ export interface AppSnapshot {
   recovered: boolean;
 }
 
-export const api = {
-  getState: () => invoke<AppSnapshot>("get_state"),
-  addUrl: (input: string) => invoke<TrackedUrl>("add_url", { input }),
-  removeUrl: (code: string) => invoke<void>("remove_url", { code }),
-  refreshUrl: (code: string) => invoke<void>("refresh_url", { code }),
-  refreshAll: () => invoke<void>("refresh_all"),
-  setNote: (code: string, note: string) => invoke<void>("set_note", { code, note }),
-  setUserBlocked: (code: string, blocked: boolean) =>
-    invoke<void>("set_user_blocked", { code, blocked }),
-  setMuted: (code: string, muted: boolean) => invoke<void>("set_muted", { code, muted }),
-  updateSettings: (settings: Settings) => invoke<Settings>("update_settings", { settings }),
-};
-
-export function onUrlUpdated(cb: (url: TrackedUrl) => void): Promise<UnlistenFn> {
-  return listen<TrackedUrl>("url-updated", (e) => cb(e.payload));
+export interface CycleInfo {
+  /** ISO time of the next automatic check; null when auto-check is paused. */
+  nextCheckAt: string | null;
 }
 
-export function onChecking(cb: (code: string) => void): Promise<UnlistenFn> {
-  return listen<string>("checking", (e) => cb(e.payload));
+type Listen<T> = (cb: (payload: T) => void) => Promise<UnlistenFn>;
+
+export interface Backend {
+  getState(): Promise<AppSnapshot>;
+  addUrl(input: string): Promise<TrackedUrl>;
+  removeUrl(code: string): Promise<void>;
+  refreshUrl(code: string): Promise<void>;
+  refreshAll(): Promise<void>;
+  setNote(code: string, note: string): Promise<void>;
+  setUserBlocked(code: string, blocked: boolean): Promise<void>;
+  setMuted(code: string, muted: boolean): Promise<void>;
+  updateSettings(settings: Settings): Promise<Settings>;
+  onUrlUpdated: Listen<TrackedUrl>;
+  onChecking: Listen<string>;
+  onCycleStarted: Listen<void>;
+  onCycleFinished: Listen<CycleInfo>;
+}
+
+const on =
+  <T>(event: string): Listen<T> =>
+  (cb) =>
+    listen<T>(event, (e) => cb(e.payload));
+
+const tauriBackend: Backend = {
+  getState: () => invoke("get_state"),
+  addUrl: (input) => invoke("add_url", { input }),
+  removeUrl: (code) => invoke("remove_url", { code }),
+  refreshUrl: (code) => invoke("refresh_url", { code }),
+  refreshAll: () => invoke("refresh_all"),
+  setNote: (code, note) => invoke("set_note", { code, note }),
+  setUserBlocked: (code, blocked) => invoke("set_user_blocked", { code, blocked }),
+  setMuted: (code, muted) => invoke("set_muted", { code, muted }),
+  updateSettings: (settings) => invoke("update_settings", { settings }),
+  onUrlUpdated: on("url-updated"),
+  onChecking: on("checking"),
+  onCycleStarted: on("cycle-started"),
+  onCycleFinished: on("cycle-finished"),
+};
+
+/** Real backend inside Tauri; sample data when the UI is opened in a plain browser during development. */
+export async function loadBackend(): Promise<Backend> {
+  if ("__TAURI_INTERNALS__" in window || !import.meta.env.DEV) return tauriBackend;
+  const { mockBackend } = await import("./mock");
+  return mockBackend;
 }
