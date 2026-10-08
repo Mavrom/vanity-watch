@@ -1,3 +1,4 @@
+mod model;
 mod parse;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
