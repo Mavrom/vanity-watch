@@ -6,5 +6,52 @@
     <title>Vanity Watch</title>
     <script type="module" src="/src/main.ts" defer></script>
   </head>
-  <body></body>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo" aria-hidden="true"></span>
+        <span>Vanity Watch</span>
+      </div>
+      <form id="add-form" class="add" autocomplete="off">
+        <span class="add-prefix">discord.gg/</span>
+        <input id="add-input" placeholder="takip edilecek url" spellcheck="false" />
+        <button type="submit" class="btn primary">Ekle</button>
+      </form>
+      <div class="controls">
+        <label class="switch" title="Otomatik kontrol">
+          <input type="checkbox" id="auto-toggle" />
+          <span class="track"><span class="thumb"></span></span>
+          <span>Otomatik</span>
+        </label>
+        <select id="interval-select" title="Kontrol aralığı">
+          <option value="10">10 sn</option>
+          <option value="15">15 sn</option>
+          <option value="20">20 sn</option>
+          <option value="30">30 sn</option>
+          <option value="60">60 sn</option>
+        </select>
+        <button id="refresh-all" class="btn" title="Hepsini şimdi kontrol et">Hepsini yenile</button>
+        <button id="open-settings" class="btn icon" title="Ayarlar"></button>
+      </div>
+    </header>
+    <p id="add-error" class="add-error" hidden></p>
+    <nav id="filters" class="filters"></nav>
+    <main id="list" class="list"></main>
+    <section id="empty" class="empty" hidden>
+      <h2>Henüz takip ettiğin bir URL yok</h2>
+      <p>Yukarıya bir vanity URL yaz: <code>sunucum</code>, <code>discord.gg/sunucum</code> veya tam link olabilir.</p>
+      <p class="muted">Kontroller token gerektirmeyen açık Discord endpoint'iyle yapılır. Hesabın hiçbir şekilde kullanılmaz.</p>
+    </section>
+    <dialog id="settings" class="settings">
+      <form method="dialog">
+        <h2>Ayarlar</h2>
+        <label class="row"><input type="checkbox" id="set-release" /> URL boşa düşünce bildirim gönder</label>
+        <label class="row"><input type="checkbox" id="set-taken" /> Boştaki URL alınınca bildirim gönder</label>
+        <label class="row"><input type="checkbox" id="set-autostart" /> Windows ile başlat (tepside, penceresiz)</label>
+        <p class="muted">Pencereyi kapatınca uygulama tepside çalışmaya devam eder. Tamamen çıkmak için tepsi ikonuna sağ tıklayıp "Çık"ı seç.</p>
+        <div class="dialog-actions"><button class="btn primary" value="close">Tamam</button></div>
+      </form>
+    </dialog>
+    <div id="toast" class="toast" hidden></div>
+  </body>
 </html>
