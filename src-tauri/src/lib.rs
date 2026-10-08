@@ -1,3 +1,4 @@
+mod discord;
 mod blocked;
 mod model;
 mod parse;
