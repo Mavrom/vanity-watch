@@ -1,6 +1,7 @@
 mod blocked;
 mod commands;
 mod discord;
+mod mem;
 mod model;
 mod monitor;
 mod notifier;
@@ -17,6 +18,17 @@ use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // The default runtime starts one worker per CPU core; polling a handful of URLs
+    // needs two, which keeps the idle thread count (and its memory) small.
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(2)
+        .max_blocking_threads(2)
+        .enable_all()
+        .build()
+        .expect("failed to build async runtime");
+    // The handle doesn't own the runtime: it must outlive the app, which `run` guarantees.
+    tauri::async_runtime::set(runtime.handle().clone());
+
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             window::open_main_window(app);
@@ -56,11 +68,12 @@ pub fn run() {
         ])
         .build(tauri::generate_context!())
         .expect("error while building Vanity Watch")
-        .run(|_app, event| {
+        .run(|app, event| {
             // Closing the window destroys the webview; keep running in the tray.
             // Only the tray's "Çık" (app.exit, which sets a code) really quits.
             if let tauri::RunEvent::ExitRequested { code: None, api, .. } = event {
                 api.prevent_exit();
+                mem::trim_soon(app);
             }
         });
 }

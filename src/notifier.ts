@@ -6,6 +6,7 @@ import type { GuildInfo, Status } from "./api";
 import { h, svgIcon } from "./dom";
 import { STATUS_META, guildIconUrl, relativeTime } from "./format";
 import { ICONS } from "./icons";
+import logoUrl from "./assets/logo.svg";
 
 interface Popup {
   id: number;
@@ -58,7 +59,7 @@ function card(p: Popup): HTMLElement {
       h(
         "header",
         {},
-        h("span", { class: "brand" }, h("i", { class: "mark" }), "Vanity Watch"),
+        h("span", { class: "brand" }, h("img", { class: "mark", src: logoUrl, alt: "", width: "16", height: "16" }), "Vanity Watch"),
         h("span", { class: "time", "data-time": p.at }, relativeTime(p.at)),
         h("button", { class: "x", title: "Kapat", onclick: () => close(p.id) }, "✕"),
       ),
@@ -128,11 +129,12 @@ async function layout() {
 
 new ResizeObserver(() => void layout()).observe(stack);
 
+// Minutes are all that matters for "x min ago" on a popup that can stay for hours.
 window.setInterval(() => {
   document.querySelectorAll<HTMLElement>("[data-time]").forEach((el) => {
     el.textContent = relativeTime(el.dataset.time || null);
   });
-}, 1000);
+}, 15_000);
 
 async function init() {
   if (!inTauri) {

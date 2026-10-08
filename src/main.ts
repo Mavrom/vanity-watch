@@ -335,12 +335,16 @@ async function init() {
   requestAnimationFrame(() => document.body.classList.add("ready"));
   if (snapshot.recovered) showToast("Veri dosyası bozuktu: yedeği alındı ve liste sıfırlandı.");
 
-  window.setInterval(() => {
+  // Relative times and the countdown tick once a second, but only while someone can see them.
+  const tick = () => {
+    if (document.hidden) return;
     document.querySelectorAll<HTMLElement>("[data-time]").forEach((el) => {
       el.textContent = relativeTime(el.dataset.time || null);
     });
     renderMonitor();
-  }, 1000);
+  };
+  window.setInterval(tick, 1000);
+  document.addEventListener("visibilitychange", tick);
 }
 
 init().catch((e) => {

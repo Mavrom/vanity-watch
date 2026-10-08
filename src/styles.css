@@ -94,31 +94,11 @@ code {
 .brand-text b { font-size: 15px; font-weight: 650; letter-spacing: -0.01em; }
 .brand-text small { color: var(--text-3); font-size: 12px; }
 .mark {
-  position: relative;
   width: 38px;
   height: 38px;
   flex: none;
-  border-radius: 12px;
-  background: var(--accent-grad);
-  box-shadow: 0 8px 24px -8px rgb(139 125 255 / 0.7), inset 0 1px 0 rgb(255 255 255 / 0.25);
-  display: grid;
-  place-items: center;
-}
-.mark::before {
-  content: "";
-  width: 24px;
-  height: 14px;
-  background: #fff;
-  border-radius: 50% / 50%;
-  clip-path: ellipse(50% 50% at 50% 50%);
-}
-.mark i {
-  position: absolute;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: #5b4bd6;
-  box-shadow: 0 0 0 1.5px #fff inset;
+  border-radius: 11px;
+  box-shadow: 0 8px 24px -8px rgb(139 125 255 / 0.7);
 }
 
 .nav-label {
@@ -312,7 +292,8 @@ select option { background: var(--bg-elev); }
   inset: 0;
   background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.06) 50%, transparent 70%);
   background-size: 250% 100%;
-  animation: sheen 3.5s ease-in-out infinite;
+  /* A few passes to draw the eye, then rest: alerts can stay up for hours. */
+  animation: sheen 3.5s ease-in-out 3;
   pointer-events: none;
 }
 .alert-icon {
@@ -477,7 +458,7 @@ kbd {
 .row[data-tone="gray"], .row[data-tone="lock"] { --tone: var(--gray); }
 .row.flash { animation: flash 1.4s ease-out; }
 .row.alerted .row-main { background: linear-gradient(90deg, color-mix(in srgb, var(--tone) 10%, transparent), transparent 55%); }
-.row.alerted .avatar { animation: glow 2s ease-in-out infinite; }
+.row.alerted .avatar { animation: glow 2s ease-in-out 6; }
 @keyframes glow {
   50% { box-shadow: 0 0 0 2px var(--bg-elev), 0 0 0 3.5px var(--tone), 0 0 16px 2px color-mix(in srgb, var(--tone) 60%, transparent); }
 }

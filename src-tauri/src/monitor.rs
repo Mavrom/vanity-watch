@@ -1,4 +1,5 @@
 use crate::blocked;
+use crate::mem;
 use crate::discord::{DiscordClient, InviteResult, API_BASE};
 use crate::notify;
 use crate::status;
@@ -65,9 +66,17 @@ impl AppState {
     }
 }
 
+/// Emits a UI event only while the panel exists; in tray mode nobody listens, so
+/// we skip serializing the payload altogether.
+fn emit_ui<S: Serialize + Clone>(app: &AppHandle, event: &str, payload: S) {
+    if app.get_webview_window(crate::window::MAIN_WINDOW).is_some() {
+        let _ = app.emit(event, payload);
+    }
+}
+
 fn set_cycle(app: &AppHandle, state: CycleState) {
     *app.state::<AppState>().cycle.lock().unwrap() = state.clone();
-    let _ = app.emit("cycle", state);
+    emit_ui(app, "cycle", state);
 }
 
 pub async fn run(app: AppHandle) {
@@ -109,6 +118,9 @@ async fn run_cycle(app: &AppHandle) {
     }
     // Persists last_checked timestamps once per cycle.
     state.save();
+    if mem::is_tray_only(app) {
+        mem::trim();
+    }
 }
 
 /// Checks one code, stores the result, emits `url-updated` and notifies on transitions.
@@ -121,7 +133,7 @@ pub async fn check_one(app: &AppHandle, code: &str) {
             None => return,
         }
     };
-    let _ = app.emit("checking", code);
+    emit_ui(app, "checking", code);
 
     let blocked = snapshot.user_blocked || blocked::is_known_blocked(code);
     let mut invite = state.client.check_invite(code).await;
@@ -147,7 +159,7 @@ pub async fn check_one(app: &AppHandle, code: &str) {
         state.save();
         tray::refresh_tooltip(app);
     }
-    let _ = app.emit("url-updated", &updated);
+    emit_ui(app, "url-updated", &updated);
 
     if let Some((from, to)) = transition {
         if let Some(kind) = notify::should_notify(from, to, &settings, updated.muted) {

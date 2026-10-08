@@ -68,7 +68,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
   position: absolute;
   inset: -60%;
   background: conic-gradient(from 0deg, transparent 0deg, var(--tone) 70deg, #b56bff 140deg, transparent 200deg);
-  animation: rotate 3.2s linear infinite;
+  /* A few turns to catch the eye, then still: a release popup stays until dismissed. */
+  animation: rotate 3.2s linear 3;
 }
 .surface {
   position: relative;
@@ -85,26 +86,13 @@ button { font: inherit; color: inherit; cursor: pointer; }
   inset: 0;
   background: linear-gradient(115deg, transparent 35%, rgb(255 255 255 / 0.05) 50%, transparent 65%);
   background-size: 250% 100%;
-  animation: sheen 4s ease-in-out infinite;
+  animation: sheen 4s ease-in-out 2;
   pointer-events: none;
 }
 
 header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
 .brand { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--text-2); }
-.mark {
-  position: relative;
-  width: 16px;
-  height: 16px;
-  border-radius: 5px;
-  background: var(--accent-grad);
-}
-.mark::after {
-  content: "";
-  position: absolute;
-  inset: 5px 3px;
-  border-radius: 50%;
-  background: #fff;
-}
+.mark { width: 16px; height: 16px; border-radius: 5px; }
 .time { color: var(--text-3); font-size: 12px; }
 .time::before { content: "·"; margin-right: 8px; }
 .x {
@@ -152,7 +140,7 @@ header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
   box-shadow: 0 0 0 3px #11131b, 0 0 14px color-mix(in srgb, var(--tone) 80%, transparent);
 }
 .badge-icon .icon { width: 13px; height: 13px; stroke-width: 2.6; }
-.toast.released .badge-icon { animation: beat 1.8s ease-in-out infinite; }
+.toast.released .badge-icon { animation: beat 1.8s ease-in-out 4; }
 
 .text { min-width: 0; }
 .eyebrow {
