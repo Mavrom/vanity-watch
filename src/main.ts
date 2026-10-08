@@ -1,6 +1,6 @@
 import "@fontsource-variable/inter";
 import "./styles.css";
-import { loadBackend, type Backend, type Settings, type Status, type TrackedUrl } from "./api";
+import { loadBackend, type Backend, type CycleState, type Settings, type Status, type TrackedUrl } from "./api";
 import { createCard, type Card } from "./card";
 import { h, svgIcon } from "./dom";
 import { FILTERS, STATUS_META, matchesFilter, relativeTime, type Filter } from "./format";
@@ -10,6 +10,7 @@ const byId = <T extends HTMLElement>(id: string) => document.getElementById(id) 
 
 const nav = byId<HTMLElement>("nav");
 const stats = byId<HTMLElement>("stats");
+const alerts = byId<HTMLElement>("alerts");
 const list = byId<HTMLElement>("list");
 const listHeader = byId<HTMLElement>("list-header");
 const listTitle = byId<HTMLElement>("list-title");
@@ -169,6 +170,50 @@ function renderActivity() {
   );
 }
 
+function renderAlerts() {
+  const pending = [...urls.values()].filter((u) => u.alert);
+  alerts.replaceChildren(
+    ...pending.map((u) => {
+      const meta = STATUS_META[u.status];
+      const releasedAt = [...u.history].reverse().find((e) => e.from === "in_use")?.at ?? u.lastChecked;
+      return h(
+        "div",
+        { class: `alert tone-${meta.tone}` },
+        h("span", { class: "alert-icon" }, svgIcon(ICONS.unlink)),
+        h(
+          "div",
+          { class: "alert-text" },
+          h("b", {}, `discord.gg/${u.code} boşaldı!`),
+          h("span", {}, meta.hint),
+        ),
+        h("small", { class: "alert-time", "data-time": releasedAt ?? "" }, relativeTime(releasedAt)),
+        h(
+          "button",
+          {
+            class: "btn ghost",
+            onclick: () => {
+              setFilter("all");
+              const card = cards.get(u.code);
+              card?.el.classList.add("open");
+              card?.el.scrollIntoView({ behavior: "smooth", block: "center" });
+            },
+          },
+          "Göster",
+        ),
+        h(
+          "button",
+          {
+            class: "btn",
+            onclick: () =>
+              backend.dismissAlert(u.code).then(() => upsert({ ...urls.get(u.code)!, alert: false }), (e) => showToast(String(e))),
+          },
+          "Gördüm",
+        ),
+      );
+    }),
+  );
+}
+
 function refreshView() {
   let visible = 0;
   for (const [code, card] of cards) {
@@ -188,6 +233,7 @@ function refreshView() {
   else emptyText.textContent = "Başka bir filtre seç ya da yeni bir URL ekle.";
 
   renderNav();
+  renderAlerts();
   renderStats();
   renderActivity();
 }
@@ -215,6 +261,12 @@ function renderMonitor() {
   monitorSub.textContent = `Her ${settings.intervalSecs} sn'de bir`;
   countdown.textContent = String(remaining);
   ringProgress.style.strokeDashoffset = String(RING_LENGTH * (1 - remaining / settings.intervalSecs));
+}
+
+function applyCycle(state: CycleState) {
+  cycling = state.cycling;
+  nextCheckAt = state.nextCheckAt ? Date.parse(state.nextCheckAt) : null;
+  renderMonitor();
 }
 
 function applySettings() {
@@ -272,22 +324,15 @@ async function init() {
     if (urls.has(url.code)) upsert(url);
   });
   await backend.onChecking((code) => cards.get(code)?.setChecking(true));
-  await backend.onCycleStarted(() => {
-    cycling = true;
-    renderMonitor();
-  });
-  await backend.onCycleFinished((info) => {
-    cycling = false;
-    nextCheckAt = info.nextCheckAt ? Date.parse(info.nextCheckAt) : null;
-    renderMonitor();
-  });
+  await backend.onCycle(applyCycle);
 
   const snapshot = await backend.getState();
   settings = snapshot.settings;
-  cycling = settings.autoCheck;
   applySettings();
+  applyCycle(snapshot.cycle);
   [...snapshot.urls].sort((a, b) => b.addedAt.localeCompare(a.addedAt)).forEach((u) => upsert(u));
   refreshView();
+  requestAnimationFrame(() => document.body.classList.add("ready"));
   if (snapshot.recovered) showToast("Veri dosyası bozuktu: yedeği alındı ve liste sıfırlandı.");
 
   window.setInterval(() => {
@@ -298,4 +343,7 @@ async function init() {
   }, 1000);
 }
 
-init().catch((e) => showToast(`Başlatılamadı: ${e}`));
+init().catch((e) => {
+  document.body.classList.add("ready");
+  showToast(`Başlatılamadı: ${e}`);
+});

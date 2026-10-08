@@ -3,6 +3,7 @@ mod commands;
 mod discord;
 mod model;
 mod monitor;
+mod notifier;
 mod notify;
 mod parse;
 mod status;
@@ -29,6 +30,7 @@ pub fn run() {
             let path = app.path().app_data_dir()?.join("vanity-watch.json");
             let (store, recovered) = Store::load(path);
             app.manage(AppState::new(store, recovered));
+            app.manage(notifier::Notifier::default());
             tray::create_tray(app.handle())?;
             if !std::env::args().any(|a| a == "--minimized") {
                 window::open_main_window(app.handle());
@@ -40,12 +42,17 @@ pub fn run() {
             commands::get_state,
             commands::add_url,
             commands::remove_url,
+            commands::dismiss_alert,
             commands::refresh_url,
             commands::refresh_all,
             commands::set_note,
             commands::set_user_blocked,
             commands::set_muted,
             commands::update_settings,
+            notifier::notifier_popups,
+            notifier::notifier_layout,
+            notifier::notifier_dismiss,
+            notifier::notifier_open,
         ])
         .build(tauri::generate_context!())
         .expect("error while building Vanity Watch")

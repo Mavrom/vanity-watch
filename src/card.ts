@@ -142,6 +142,7 @@ export function createCard(initial: TrackedUrl, backend: Backend, handlers: Card
   function render() {
     const meta = STATUS_META[url.status];
     el.dataset.tone = meta.tone;
+    el.classList.toggle("alerted", url.alert);
 
     const iconUrl = url.guild ? guildIconUrl(url.guild) : null;
     const letter = (url.guild?.name || url.code).charAt(0).toUpperCase();

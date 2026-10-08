@@ -1,6 +1,7 @@
 use crate::model::{Settings, TrackedUrl};
-use crate::monitor::{self, AppState};
+use crate::monitor::{self, AppState, CycleState};
 use crate::parse;
+use crate::tray;
 use chrono::Utc;
 use serde::Serialize;
 use std::sync::atomic::Ordering;
@@ -14,6 +15,7 @@ const NOTE_LIMIT: usize = 500;
 pub struct AppSnapshot {
     settings: Settings,
     urls: Vec<TrackedUrl>,
+    cycle: CycleState,
     recovered: bool,
 }
 
@@ -39,6 +41,7 @@ pub fn get_state(state: State<'_, AppState>) -> AppSnapshot {
     AppSnapshot {
         settings: store.data.settings.clone(),
         urls: store.data.urls.clone(),
+        cycle: state.cycle.lock().unwrap().clone(),
         recovered: state.recovered.swap(false, Ordering::SeqCst),
     }
 }
@@ -61,9 +64,17 @@ pub fn add_url(app: AppHandle, state: State<'_, AppState>, input: String) -> Res
 }
 
 #[tauri::command]
-pub fn remove_url(state: State<'_, AppState>, code: String) {
+pub fn remove_url(app: AppHandle, state: State<'_, AppState>, code: String) {
     state.store.lock().unwrap().data.urls.retain(|u| u.code != code);
     state.save();
+    tray::refresh_tooltip(&app);
+}
+
+#[tauri::command]
+pub fn dismiss_alert(app: AppHandle, state: State<'_, AppState>, code: String) -> Result<(), String> {
+    with_url(&state, &code, |u| u.alert = false)?;
+    tray::refresh_tooltip(&app);
+    Ok(())
 }
 
 #[tauri::command]
@@ -106,14 +117,17 @@ pub fn update_settings(
     settings: Settings,
 ) -> Result<Settings, String> {
     let settings = settings.sanitized();
-    let previous_autostart = state.store.lock().unwrap().data.settings.autostart;
-    if settings.autostart != previous_autostart {
+    let previous = state.store.lock().unwrap().data.settings.clone();
+    if settings.autostart != previous.autostart {
         let autolaunch = app.autolaunch();
         let result = if settings.autostart { autolaunch.enable() } else { autolaunch.disable() };
         result.map_err(|e| format!("Windows ile başlat ayarlanamadı: {e}"))?;
     }
     state.store.lock().unwrap().data.settings = settings.clone();
     state.save();
-    state.wake.notify_one();
+    // Only schedule changes need the loop; notification toggles don't warrant a new cycle.
+    if settings.auto_check != previous.auto_check || settings.interval_secs != previous.interval_secs {
+        state.wake.notify_one();
+    }
     Ok(settings)
 }

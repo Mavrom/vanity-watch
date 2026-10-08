@@ -61,6 +61,8 @@ pub struct TrackedUrl {
     pub note: String,
     pub user_blocked: bool,
     pub muted: bool,
+    /// Released while we watched it and the user hasn't acknowledged it yet.
+    pub alert: bool,
     pub history: Vec<HistoryEntry>,
 }
 
@@ -95,6 +97,16 @@ impl TrackedUrl {
             self.history.drain(..excess);
         }
         Some((from, to))
+    }
+
+    /// Raises the in-app alert when a code we saw in use is released (unless muted)
+    /// and clears it once the code is taken again.
+    pub fn update_alert(&mut self, transition: Option<(Status, Status)>) {
+        match transition {
+            Some((Status::InUse, to)) if to.is_free() && !self.muted => self.alert = true,
+            Some((_, Status::InUse)) => self.alert = false,
+            _ => {}
+        }
     }
 }
 
@@ -214,6 +226,26 @@ mod tests {
         }
         assert_eq!(u.history.len(), HISTORY_LIMIT);
         assert_eq!(u.history.last().unwrap().at, t(60));
+    }
+
+    #[test]
+    fn alert_raised_on_release_and_cleared_when_taken() {
+        let mut u = TrackedUrl::new("abc".into(), t(0));
+        u.update_alert(Some((Status::Unknown, Status::AppearsFree)));
+        assert!(!u.alert, "first check is not a release");
+        u.update_alert(Some((Status::InUse, Status::ReleasedGuildExists)));
+        assert!(u.alert);
+        u.update_alert(None);
+        assert!(u.alert, "stays until acknowledged");
+        u.update_alert(Some((Status::ReleasedGuildExists, Status::InUse)));
+        assert!(!u.alert);
+    }
+
+    #[test]
+    fn muted_url_gets_no_alert() {
+        let mut u = TrackedUrl { muted: true, ..TrackedUrl::new("abc".into(), t(0)) };
+        u.update_alert(Some((Status::InUse, Status::AppearsFree)));
+        assert!(!u.alert);
     }
 
     #[test]

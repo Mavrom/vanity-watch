@@ -3,27 +3,32 @@ use crate::discord::{DiscordClient, InviteResult, API_BASE};
 use crate::notify;
 use crate::status;
 use crate::store::Store;
+use crate::notifier;
+use crate::tray;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use std::time::Duration;
 use tauri::{AppHandle, Emitter, Manager};
-use tauri_plugin_notification::NotificationExt;
 use tokio::sync::Notify;
 
 /// Pause between two codes in one cycle, to stay far below Discord's rate limits.
 const GAP_BETWEEN_CHECKS: Duration = Duration::from_secs(1);
 
-#[derive(Clone, Serialize)]
+/// What the UI needs to draw the countdown ring.
+#[derive(Debug, Clone, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
-struct CycleInfo {
-    next_check_at: Option<DateTime<Utc>>,
+pub struct CycleState {
+    pub cycling: bool,
+    /// `None` while a cycle runs or when auto-check is paused.
+    pub next_check_at: Option<DateTime<Utc>>,
 }
 
 pub struct AppState {
     pub store: Mutex<Store>,
     pub client: DiscordClient,
+    pub cycle: Mutex<CycleState>,
     /// Wakes the monitor loop (settings changed or a cycle was requested).
     pub wake: Notify,
     /// Run one cycle even if auto-check is off.
@@ -37,6 +42,7 @@ impl AppState {
         Self {
             store: Mutex::new(store),
             client: DiscordClient::new(API_BASE),
+            cycle: Mutex::new(CycleState::default()),
             wake: Notify::new(),
             force_cycle: AtomicBool::new(false),
             recovered: AtomicBool::new(recovered),
@@ -53,6 +59,15 @@ impl AppState {
         self.force_cycle.store(true, Ordering::SeqCst);
         self.wake.notify_one();
     }
+
+    pub fn alert_count(&self) -> usize {
+        self.store.lock().unwrap().data.urls.iter().filter(|u| u.alert).count()
+    }
+}
+
+fn set_cycle(app: &AppHandle, state: CycleState) {
+    *app.state::<AppState>().cycle.lock().unwrap() = state.clone();
+    let _ = app.emit("cycle", state);
 }
 
 pub async fn run(app: AppHandle) {
@@ -64,12 +79,11 @@ pub async fn run(app: AppHandle) {
         };
         let forced = state.force_cycle.swap(false, Ordering::SeqCst);
         if auto || forced {
-            let _ = app.emit("cycle-started", ());
+            set_cycle(&app, CycleState { cycling: true, next_check_at: None });
             run_cycle(&app).await;
         }
-        // Lets the UI draw a countdown; `None` means auto-check is paused.
         let next_check_at = auto.then(|| Utc::now() + chrono::Duration::seconds(interval.into()));
-        let _ = app.emit("cycle-finished", CycleInfo { next_check_at });
+        set_cycle(&app, CycleState { cycling: false, next_check_at });
         if auto {
             tokio::select! {
                 _ = tokio::time::sleep(Duration::from_secs(interval.into())) => {}
@@ -126,19 +140,19 @@ pub async fn check_one(app: &AppHandle, code: &str) {
         let settings = store.data.settings.clone();
         let Some(url) = store.get_mut(code) else { return };
         let transition = url.apply(classification, Utc::now());
+        url.update_alert(transition);
         (url.clone(), transition, settings)
     };
     if transition.is_some() {
         state.save();
+        tray::refresh_tooltip(app);
     }
     let _ = app.emit("url-updated", &updated);
 
     if let Some((from, to)) = transition {
         if let Some(kind) = notify::should_notify(from, to, &settings, updated.muted) {
-            let (title, body) = notify::message(kind, code, to, updated.guild.as_ref());
-            if let Err(e) = app.notification().builder().title(title).body(body).show() {
-                eprintln!("failed to show notification: {e}");
-            }
+            let text = notify::message(kind, code, to, updated.guild.as_ref());
+            notifier::push(app, kind, code, text, to, updated.guild.clone());
         }
     }
 }

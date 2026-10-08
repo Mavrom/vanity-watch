@@ -4,7 +4,6 @@
   --panel: rgb(255 255 255 / 0.028);
   --panel-hover: rgb(255 255 255 / 0.05);
   --border: rgb(255 255 255 / 0.07);
-  --row-solid: #13141b;
   --border-strong: rgb(255 255 255 / 0.13);
   --text: #eceef3;
   --text-2: #a3a8b6;
@@ -27,6 +26,8 @@
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
+/* Shown once the first snapshot is rendered, so controls don't visibly flip on load. */
+body.ready .app { opacity: 1; }
 
 html, body { margin: 0; height: 100%; }
 body {
@@ -72,6 +73,8 @@ code {
 
 .app {
   position: relative;
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
   display: grid;
   grid-template-columns: 248px minmax(0, 1fr);
   height: 100vh;
@@ -82,9 +85,8 @@ code {
   display: flex;
   flex-direction: column;
   padding: 22px 14px 16px;
-  background: rgb(8 9 14 / 0.65);
+  background: rgb(8 9 14 / 0.72);
   border-right: 1px solid var(--border);
-  backdrop-filter: blur(20px);
   min-height: 0;
 }
 .brand { display: flex; align-items: center; gap: 12px; padding: 0 8px 26px; }
@@ -217,10 +219,10 @@ code {
   content: "";
   width: 7px;
   height: 7px;
+  flex: none;
   border-radius: 50%;
   background: var(--green);
-  box-shadow: 0 0 0 0 rgb(52 211 153 / 0.6);
-  animation: pulse 2s infinite;
+  animation: blink 2s ease-in-out infinite;
 }
 .monitor-text small { color: var(--text-3); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -284,6 +286,53 @@ select option { background: var(--bg-elev); }
   box-shadow: 0 10px 24px -10px rgb(139 125 255 / 0.9), inset 0 1px 0 rgb(255 255 255 / 0.2);
 }
 .btn.primary:hover { filter: brightness(1.1); }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--text-2); }
+.btn.ghost:hover { color: var(--text); background: rgb(255 255 255 / 0.06); }
+
+/* Alerts: stay until the user acknowledges them */
+.alerts { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.alerts:empty { display: none; }
+.alert {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 14px 14px 16px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--tone) 45%, transparent);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--tone) 18%, transparent), color-mix(in srgb, var(--tone) 4%, transparent) 60%),
+    var(--bg-elev);
+  box-shadow: 0 16px 40px -20px color-mix(in srgb, var(--tone) 70%, transparent);
+  animation: pop 0.25s ease-out;
+}
+.alert::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.06) 50%, transparent 70%);
+  background-size: 250% 100%;
+  animation: sheen 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+.alert-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--tone) 22%, transparent);
+  color: var(--tone);
+}
+.alert-icon .icon { width: 19px; height: 19px; }
+.alert-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.alert-text b { font-size: 14.5px; font-weight: 650; }
+.alert-text span { color: var(--text-2); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alert-time { color: var(--text-3); font-size: 12px; white-space: nowrap; }
+.alert .btn { height: 34px; padding: 0 12px; font-size: 13px; }
+@keyframes sheen { from { background-position: 150% 0; } to { background-position: -100% 0; } }
 
 /* Stats */
 .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
@@ -428,6 +477,11 @@ kbd {
 .row[data-tone="red"] { --tone: var(--red); }
 .row[data-tone="gray"], .row[data-tone="lock"] { --tone: var(--gray); }
 .row.flash { animation: flash 1.4s ease-out; }
+.row.alerted .row-main { background: linear-gradient(90deg, color-mix(in srgb, var(--tone) 10%, transparent), transparent 55%); }
+.row.alerted .avatar { animation: glow 2s ease-in-out infinite; }
+@keyframes glow {
+  50% { box-shadow: 0 0 0 2px var(--bg-elev), 0 0 0 3.5px var(--tone), 0 0 16px 2px color-mix(in srgb, var(--tone) 60%, transparent); }
+}
 
 .ident { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .avatar {
@@ -486,17 +540,18 @@ kbd {
   position: absolute;
   top: 0;
   bottom: 0;
-  right: 44px;
+  right: 46px;
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding-left: 56px;
-  background: linear-gradient(90deg, transparent, var(--row-solid) 48px);
+  gap: 4px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.15s;
 }
+.row-main .members, .row-main .time { transition: opacity 0.15s; }
 .row-main:hover .actions, .row.open .actions { opacity: 1; pointer-events: auto; }
+.row-main:hover .members, .row-main:hover .time,
+.row.open .members, .row.open .time { opacity: 0; }
 .muted-flag { display: inline-flex; margin-left: 6px; color: var(--red); vertical-align: -2px; }
 .muted-flag .icon { width: 13px; height: 13px; }
 .icon-btn {
@@ -627,7 +682,15 @@ input:checked + .mini-switch::after { transform: translateX(12px); }
 /* Activity */
 .activity-panel { position: sticky; top: 0; }
 .live { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; color: var(--green); font-size: 12px; font-weight: 600; }
-.live i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+.live i { position: relative; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+.live i::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--green);
+  animation: ripple 2s ease-out infinite;
+}
 .activity { list-style: none; margin: 0; padding: 2px 18px 6px; max-height: 420px; overflow-y: auto; }
 .activity li { position: relative; display: flex; gap: 12px; padding: 0 0 16px; }
 .activity li:not(:last-child)::before {
@@ -711,11 +774,11 @@ input:checked + .mini-switch::after { transform: translateX(12px); }
 
 /* Animations */
 @keyframes spin { to { transform: rotate(360deg); } }
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgb(52 211 153 / 0.55); }
-  70% { box-shadow: 0 0 0 7px rgb(52 211 153 / 0); }
-  100% { box-shadow: 0 0 0 0 rgb(52 211 153 / 0); }
+@keyframes ripple {
+  from { transform: scale(1); opacity: 0.6; }
+  to { transform: scale(2.8); opacity: 0; }
 }
+@keyframes blink { 50% { opacity: 0.35; } }
 @keyframes scan { from { background-position: -50% 0; } to { background-position: 150% 0; } }
 @keyframes row-in { from { opacity: 0; transform: translateY(4px); } }
 @keyframes pop { from { opacity: 0; transform: translateY(6px) scale(0.98); } }

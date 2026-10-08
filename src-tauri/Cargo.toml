@@ -25,6 +25,10 @@ chrono = { version = "0.4", features = ["serde"] }
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 tokio = { version = "1", features = ["time", "sync", "macros"] }
 
+[target.'cfg(windows)'.dependencies]
+# PlaySoundW for the notification chime of our own popup window.
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Media_Audio"] }
+
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 wiremock = "0.6"

@@ -5,6 +5,12 @@ const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
 export default defineConfig(() => ({
+  // Two pages: the panel and the notification popup window.
+  build: {
+    rollupOptions: {
+      input: { main: "index.html", notifier: "notifier.html" },
+    },
+  },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
