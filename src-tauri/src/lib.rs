@@ -1,3 +1,4 @@
+mod status;
 mod discord;
 mod blocked;
 mod model;
