@@ -95,7 +95,9 @@ const tauriBackend: Backend = {
 
 /** Real backend inside Tauri; sample data when the UI is opened in a plain browser during development. */
 export async function loadBackend(): Promise<Backend> {
-  if ("__TAURI_INTERNALS__" in window || !import.meta.env.DEV) return tauriBackend;
-  const { mockBackend } = await import("./mock");
-  return mockBackend;
+  if (import.meta.env.DEV && !("__TAURI_INTERNALS__" in window)) {
+    const { mockBackend } = await import("./mock");
+    return mockBackend;
+  }
+  return tauriBackend;
 }
