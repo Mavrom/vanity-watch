@@ -1,3 +1,4 @@
+mod notify;
 mod status;
 mod discord;
 mod blocked;
